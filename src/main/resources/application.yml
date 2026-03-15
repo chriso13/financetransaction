@@ -1,0 +1,83 @@
+server:
+  port: 9092
+
+spring:
+  application:
+    name: finance-transaction
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/churchDB?useSSL=false&serverTimezone=UTC
+    username: root
+    password: pass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+# ================================
+# EUREKA DISCOVERY ⭐
+# ================================
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+  instance:
+    prefer-ip-address: true
+
+# ================================
+# RESILIENCE4J
+# ================================
+resilience4j:
+
+  circuitbreaker:
+    instances:
+      memberService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+
+      worshipService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+
+  retry:
+    instances:
+      memberService:
+        maxAttempts: 3
+        waitDuration: 2s
+
+      worshipService:
+        maxAttempts: 3
+        waitDuration: 2s
+
+# ================================
+# ACTUATOR
+# ================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+
+  endpoint:
+    health:
+      show-details: always
